@@ -78,3 +78,9 @@ ul#history-list li {
     width: 80%;
     border-radius: 5px;
 }
+
+
+#reading {
+    min-height: 1.5em;
+    margin-bottom: 10px;
+}
