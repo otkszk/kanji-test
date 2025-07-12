@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -42,16 +42,14 @@
         <button onclick="showHistory()">記録を見る</button>
     </div>
 
-
     <div id="quiz" style="display:none;">
         <div id="question-box">
+            <div id="reading" style="font-size: 1.5em; color: #34495e;"></div>
             <h2 id="kanji"></h2>
             <button onclick="answer(true)">○ 読めた</button>
             <button onclick="answer(false)">× 読めなかった</button>
         </div>
     </div>
-<progress id="progress-bar" value="0" max="100" style="width: 80%; height: 20px;"></progress>
-
 
     <div id="result" style="display:none;">
         <h2>結果</h2>
@@ -61,13 +59,11 @@
         <button onclick="location.reload()">もう一度</button>
     </div>
 
-
     <div id="history" style="display:none;">
         <h2>過去の記録</h2>
         <ul id="history-list"></ul>
         <button onclick="location.reload()">戻る</button>
     </div>
-
 
     <script src="script.js"></script>
 </body>
