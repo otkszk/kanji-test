@@ -8,7 +8,18 @@
 <body>
     <h1>漢字読みテスト</h1>
     <div id="setup">
-        <label>検査日: <input type="date" id="test-date"></label><br>
+        <label>検査日: <input type="date" id="test-date" value="2025-07-12"></label><br>
+<label>フォント:
+    <select id="font-select">
+        <option value="serif">明朝体（serif）</option>
+        <option value="sans-serif">ゴシック体（sans-serif）</option>
+        <option value="monospace">等幅（monospace）</option>
+        <option value="cursive">筆記体（cursive）</option>
+    </select>
+</label><br>
+<label>文字の色:
+    <input type="color" id="color-picker" value="#e74c3c">
+</label><br>
         <label>学年とセット:
             <select id="grade-set">
                 <option value="">選んでください</option>
