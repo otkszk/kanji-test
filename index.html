@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>漢字読みテスト</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>漢字読みテスト</h1>
+    <div id="setup">
+        <label>検査日: <input type="date" id="test-date"></label><br>
+        <label>学年とセット:
+            <select id="grade-set">
+                <option value="">選んでください</option>
+                <option value="１年">１年</option>
+                <option value="２年①">２年①</option>
+                <option value="２年②">２年②</option>
+                <option value="３年①">３年①</option>
+                <option value="３年②">３年②</option>
+                <option value="４年①">４年①</option>
+                <option value="４年②">４年②</option>
+                <option value="５年①">５年①</option>
+                <option value="５年②">５年②</option>
+                <option value="６年①">６年①</option>
+                <option value="６年②">６年②</option>
+            </select>
+        </label><br>
+        <label>モード:
+            <select id="mode">
+                <option value="normal">通常モード</option>
+                <option value="random">ランダムモード</option>
+                <option value="review">復習モード</option>
+            </select>
+        </label><br>
+        <label>音声の種類:
+            <select id="voice-select"></select>
+        </label><br>
+        <label>音声速度:
+            <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+        </label><br>
+        <button onclick="startTest()">テスト開始</button>
+        <button onclick="showHistory()">記録を見る</button>
+    </div>
+
+
+    <div id="quiz" style="display:none;">
+        <div id="question-box">
+            <h2 id="kanji"></h2>
+            <button onclick="answer(true)">○ 読めた</button>
+            <button onclick="answer(false)">× 読めなかった</button>
+        </div>
+    </div>
+
+
+    <div id="result" style="display:none;">
+        <h2>結果</h2>
+        <p id="score"></p>
+        <p id="missed"></p>
+        <button onclick="saveResult()">記録を保存</button>
+        <button onclick="location.reload()">もう一度</button>
+    </div>
+
+
+    <div id="history" style="display:none;">
+        <h2>過去の記録</h2>
+        <ul id="history-list"></ul>
+        <button onclick="location.reload()">戻る</button>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
