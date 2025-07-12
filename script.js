@@ -6,6 +6,22 @@ let missed = [];
 let selectedVoice = null;
 let speechRate = 1;
 
+window.speechSynthesis.onvoiceschanged = () => {
+    const voiceSelect = document.getElementById("voice-select");
+    const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("ja"));
+    voiceSelect.innerHTML = "";
+    voices.forEach(voice => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+    });
+    if (!selectedVoice && voices.length > 0) {
+        selectedVoice = voices[0];
+        voiceSelect.value = voices[0].name;
+    }
+};
+
 function startTest() {
     const gradeSet = document.getElementById("grade-set").value;
     const mode = document.getElementById("mode").value;
@@ -50,6 +66,7 @@ function showQuestion() {
         return;
     }
     document.getElementById("kanji").textContent = questions[current].kanji;
+    document.getElementById("reading").textContent = "";
     updateProgressBar();
 }
 
@@ -59,9 +76,13 @@ function answer(isCorrect) {
     } else {
         missed.push(questions[current]);
     }
-    speak(questions[current].reading);
-    current++;
-    showQuestion();
+    const readingText = questions[current].reading;
+    document.getElementById("reading").textContent = readingText;
+    speak(readingText);
+    setTimeout(() => {
+        current++;
+        showQuestion();
+    }, 1500);
 }
 
 function showResult() {
@@ -116,7 +137,5 @@ function shuffleArray(array) {
 }
 
 function updateProgressBar() {
-    const progress = document.getElementById("progress-bar");
-    const percent = Math.round((current / questions.length) * 100);
-    progress.value = percent;
+    // optional progress bar handling if needed
 }
