@@ -1,72 +1,76 @@
 
-let kanjiList = [];
-let currentIndex = 0;
-let correctCount = 0;
-let missedList = [];
+let questions = [];
+let current = 0;
+let correct = 0;
+let missed = [];
 let selectedVoice = null;
 let speechRate = 1;
 
 function startTest() {
     const gradeSet = document.getElementById("grade-set").value;
     const mode = document.getElementById("mode").value;
-    const date = document.getElementById("test-date").value;
-    if (!gradeSet || !date) {
-        alert("検査日と学年セットを選んでください");
+    const voiceSelect = document.getElementById("voice-select");
+    selectedVoice = speechSynthesis.getVoices().find(v => v.name === voiceSelect.value);
+    speechRate = parseFloat(document.getElementById("rate").value);
+
+    if (!gradeSet) {
+        alert("学年とセットを選んでください");
         return;
     }
 
     fetch(`data/${gradeSet}.json`)
         .then(response => response.json())
         .then(data => {
-            kanjiList = data;
+            questions = data;
             if (mode === "random") {
-                kanjiList = shuffleArray(kanjiList);
+                questions = shuffleArray(questions);
             } else if (mode === "review") {
                 const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
                 const last = history[history.length - 1];
-                if (last && last.missed.length > 0) {
-                    kanjiList = last.missed.map(item => ({ kanji: item.kanji, answer: item.answer }));
+                if (last) {
+                    questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
                 } else {
-                    alert("復習する漢字がありません");
+                    alert("復習モードの記録がありません");
                     return;
                 }
             }
-            currentIndex = 0;
-            correctCount = 0;
-            missedList = [];
+            current = 0;
+            correct = 0;
+            missed = [];
             document.getElementById("setup").style.display = "none";
             document.getElementById("quiz").style.display = "block";
+            document.getElementById("result").style.display = "none";
             showQuestion();
         });
 }
 
 function showQuestion() {
-    if (currentIndex >= kanjiList.length) {
+    if (current >= questions.length) {
         showResult();
         return;
     }
-    document.getElementById("kanji").textContent = kanjiList[currentIndex].kanji;
+    document.getElementById("kanji").textContent = questions[current].kanji;
+    updateProgressBar();
 }
 
 function answer(isCorrect) {
-    const item = kanjiList[currentIndex];
     if (isCorrect) {
-        correctCount++;
+        correct++;
     } else {
-        missedList.push(item);
+        missed.push(questions[current]);
     }
-    speak(item.answer);
-    currentIndex++;
-    setTimeout(showQuestion, 800);
+    speak(questions[current].reading);
+    current++;
+    showQuestion();
 }
 
 function showResult() {
     document.getElementById("quiz").style.display = "none";
     document.getElementById("result").style.display = "block";
-    const score = Math.round((correctCount / kanjiList.length) * 100);
-    document.getElementById("score").textContent = `得点: ${score}点（${correctCount} / ${kanjiList.length}）`;
-    document.getElementById("missed").textContent = missedList.length > 0
-        ? "読めなかった漢字: " + missedList.map(item => item.kanji).join(", ")
+    const score = Math.round((correct / questions.length) * 100);
+    document.getElementById("score").textContent = `得点: ${score}点 (${correct}/${questions.length})`;
+    document.getElementById("missed").textContent = missed.length > 0
+        ? "読めなかった漢字: " + missed.map(k => k.kanji).join(", ")
         : "すべて読めました！";
 }
 
@@ -74,12 +78,9 @@ function saveResult() {
     const date = document.getElementById("test-date").value;
     const gradeSet = document.getElementById("grade-set").value;
     const mode = document.getElementById("mode").value;
-    const score = Math.round((correctCount / kanjiList.length) * 100);
+    const score = Math.round((correct / questions.length) * 100);
     const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
-    history.push({
-        date, gradeSet, mode, score,
-        missed: missedList
-    });
+    history.push({ date, gradeSet, mode, score, missed });
     localStorage.setItem("kanjiTestHistory", JSON.stringify(history));
     alert("記録を保存しました");
 }
@@ -90,11 +91,20 @@ function showHistory() {
     const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
     const list = document.getElementById("history-list");
     list.innerHTML = "";
-    history.forEach(entry => {
+    history.forEach(h => {
         const li = document.createElement("li");
-        li.textContent = `${entry.date} - ${entry.gradeSet} - ${entry.mode} - ${entry.score}点 - 読めなかった漢字: ${entry.missed.map(m => m.kanji).join(", ")}`;
+        li.textContent = `${h.date} - ${h.gradeSet} - ${h.mode} - ${h.score}点 - 読めなかった漢字: ${h.missed.map(k => k.kanji).join(", ")}`;
         list.appendChild(li);
     });
+}
+
+function speak(text) {
+    if (!selectedVoice) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.voice = selectedVoice;
+    utter.lang = "ja-JP";
+    utter.rate = speechRate;
+    speechSynthesis.speak(utter);
 }
 
 function shuffleArray(array) {
@@ -105,36 +115,8 @@ function shuffleArray(array) {
     return array;
 }
 
-function speak(text) {
-    if (!selectedVoice) return;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = selectedVoice;
-    utterance.rate = speechRate;
-    utterance.lang = "ja-JP";
-    speechSynthesis.speak(utterance);
+function updateProgressBar() {
+    const progress = document.getElementById("progress-bar");
+    const percent = Math.round((current / questions.length) * 100);
+    progress.value = percent;
 }
-
-function populateVoices() {
-    const voiceSelect = document.getElementById("voice-select");
-    const voices = speechSynthesis.getVoices().filter(v => v.lang === "ja-JP");
-    voiceSelect.innerHTML = "";
-    voices.forEach((voice, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = voice.name;
-        voiceSelect.appendChild(option);
-    });
-    voiceSelect.onchange = () => {
-        selectedVoice = voices[voiceSelect.value];
-    };
-    if (voices.length > 0) {
-        selectedVoice = voices[0];
-    }
-}
-
-document.getElementById("rate").oninput = function () {
-    speechRate = parseFloat(this.value);
-};
-
-window.speechSynthesis.onvoiceschanged = populateVoices;
-window.onload = populateVoices;
