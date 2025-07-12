@@ -84,3 +84,11 @@ ul#history-list li {
     min-height: 1.5em;
     margin-bottom: 10px;
 }
+
+#kanji {
+    font-size: 6em;
+}
+
+#reading {
+    font-size: 2em;
+}
