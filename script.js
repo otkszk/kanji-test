@@ -246,3 +246,27 @@ showResult = function() {
     localStorage.removeItem("kanjiTestProgress");
     originalShowResult();
 }
+
+
+// フォントと色を読み込み、反映する
+function applyFontAndColor() {
+    const font = document.getElementById("font-select").value;
+    const color = document.getElementById("color-picker").value;
+    const kanjiElem = document.getElementById("kanji");
+    const readingElem = document.getElementById("reading");
+    kanjiElem.style.fontFamily = font;
+    kanjiElem.style.color = color;
+    readingElem.style.fontFamily = font;
+    readingElem.style.color = "#34495e";
+}
+
+function showQuestion() {
+    if (current >= questions.length) {
+        showResult();
+        return;
+    }
+    document.getElementById("kanji").textContent = questions[current].kanji;
+    document.getElementById("reading").textContent = "";
+    updateProgressBar();
+    applyFontAndColor(); // フォントと色を適用
+}
