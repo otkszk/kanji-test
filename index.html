@@ -8,18 +8,7 @@
 <body>
     <h1>漢字読みテスト</h1>
     <div id="setup">
-        <label>検査日: <input type="date" id="test-date" value="2025-07-12"></label><br>
-<label>フォント:
-    <select id="font-select">
-        <option value="serif">明朝体（serif）</option>
-        <option value="sans-serif">ゴシック体（sans-serif）</option>
-        <option value="monospace">等幅（monospace）</option>
-        <option value="cursive">筆記体（cursive）</option>
-    </select>
-</label><br>
-<label>文字の色:
-    <input type="color" id="color-picker" value="#e74c3c">
-</label><br>
+        <label>検査日: <input type="date" id="test-date" value="2025-07-14"></label><br>
         <label>学年とセット:
             <select id="grade-set">
                 <option value="">選んでください</option>
@@ -49,23 +38,48 @@
         <label>音声速度:
             <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
         </label><br>
+        <label>フォント:
+            <select id="font-select">
+                <option value="serif">明朝体（serif）</option>
+                <option value="sans-serif">ゴシック体（sans-serif）</option>
+                <option value="monospace">等幅（monospace）</option>
+                <option value="cursive">筆記体（cursive）</option>
+            </select>
+        </label><br>
+        <label>文字の色:
+            <select id="color-picker">
+                <option value="#e74c3c">赤</option>
+                <option value="#2c3e50">黒</option>
+                <option value="#2980b9">青</option>
+                <option value="#27ae60">緑</option>
+                <option value="#f39c12">オレンジ</option>
+                <option value="#8e44ad">紫</option>
+                <option value="#d35400">茶</option>
+                <option value="#1abc9c">水色</option>
+                <option value="#7f8c8d">グレー</option>
+                <option value="#000000">真っ黒</option>
+            </select>
+        </label><br>
         <button onclick="startTest()">テスト開始</button>
         <button onclick="showHistory()">記録を見る</button>
     </div>
 
     <div id="quiz" style="display:none;">
         <div id="question-box">
-            <div id="reading" style="font-size: 1.5em; color: #34495e;"></div>
-            <h2 id="kanji"></h2>
+            <div id="reading" style="font-size: 2em; min-height: 1.5em; margin-bottom: 10px;"></div>
+            <h2 id="kanji" style="font-size: 6em;"></h2>
             <button onclick="answer(true)">○ 読めた</button>
-            <button onclick="answer(false)">× 読めなかった</button>
+            <button onclick="answer(false)">× 読めなかった</button><br>
+            <progress id="progress-bar" value="0" max="100" style="width: 100%; height: 20px; margin-top: 20px;"></progress><br>
+            <button onclick="interruptTest()">中断</button>
         </div>
     </div>
 
     <div id="result" style="display:none;">
         <h2>結果</h2>
-        <p id="score"></p>
+        <p id="score" style="font-size: 2em;"></p>
         <p id="missed"></p>
+        <div id="history-table-area"></div>
         <button onclick="saveResult()">記録を保存</button>
         <button onclick="location.reload()">もう一度</button>
     </div>
