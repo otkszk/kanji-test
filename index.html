@@ -1,96 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>漢字読みテスト</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>漢字読みテスト</h1>
-    <div id="setup">
-        <label>検査日: <input type="date" id="test-date" value="2025-07-14"></label><br>
-        <label>学年とセット:
-            <select id="grade-set">
-                <option value="">選んでください</option>
-                <option value="１年">１年</option>
-                <option value="２年①">２年①</option>
-                <option value="２年②">２年②</option>
-                <option value="３年①">３年①</option>
-                <option value="３年②">３年②</option>
-                <option value="４年①">４年①</option>
-                <option value="４年②">４年②</option>
-                <option value="５年①">５年①</option>
-                <option value="５年②">５年②</option>
-                <option value="６年①">６年①</option>
-                <option value="６年②">６年②</option>
-            </select>
-        </label><br>
-        <label>モード:
-            <select id="mode">
-                <option value="normal">通常モード</option>
-                <option value="random">ランダムモード</option>
-                <option value="review">復習モード</option>
-            </select>
-        </label><br>
-        <label>音声の種類:
-            <select id="voice-select"></select>
-        </label><br>
-        <label>音声速度:
-            <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
-        </label><br>
-        <label>フォント:
-            <select id="font-select">
-                <option value="serif">明朝体（serif）</option>
-                <option value="sans-serif">ゴシック体（sans-serif）</option>
-                <option value="monospace">等幅（monospace）</option>
-                <option value="cursive">筆記体（cursive）</option>
-            </select>
-        </label><br>
-        <label>文字の色:
-            <select id="color-picker">
-                <option value="#e74c3c">赤</option>
-                <option value="#2c3e50">黒</option>
-                <option value="#2980b9">青</option>
-                <option value="#27ae60">緑</option>
-                <option value="#f39c12">オレンジ</option>
-                <option value="#8e44ad">紫</option>
-                <option value="#d35400">茶</option>
-                <option value="#1abc9c">水色</option>
-                <option value="#7f8c8d">グレー</option>
-                <option value="#000000">真っ黒</option>
-            </select>
-        </label><br>
-        <button onclick="startTest()">テスト開始</button>
-        <button onclick="showHistory()">記録を見る</button>
-    </div>
-
-    <div id="quiz" style="display:none;">
-        <div id="question-box">
-            <div id="reading" style="font-size: 2em; min-height: 1.5em; margin-bottom: 10px;"></div>
-            <h2 id="kanji" style="font-size: 6em;"></h2>
-            <button onclick="answer(true)">○ 読めた</button>
-            <button onclick="answer(false)">× 読めなかった</button><br>
-            <progress id="progress-bar" value="0" max="100" style="width: 100%; height: 20px; margin-top: 20px;"></progress><br>
-            <button onclick="interruptTest()">中断する</button>
-        </div>
-    </div>
-
-    <div id="result" style="display:none;">
-        <h2>結果</h2>
-        <p id="score" style="font-size: 2em;"></p>
-        <p id="missed"></p>
-        <div id="current-result-table" style="margin-top: 20px;"></div>
-        <div id="history-table-area" style="margin-top: 40px;"></div>
-        <button onclick="saveResult()">記録を保存</button>
-        <button onclick="location.reload()">もう一度</button>
-    </div>
-
-    <div id="history" style="display:none;">
-        <h2>過去の記録</h2>
-        <div id="history-list-table"></div>
-        <button onclick="location.reload()">戻る</button>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+<head><meta charset="UTF-8"><title>漢字読みテスト</title>
+<link rel="stylesheet" href="style.css"></head><body>
+<h1>漢字読みテスト</h1>
+<div id="setup"><label>検査日: <input type="date" id="test-date" value="2025-07-16"></label><br>
+<label>学年:
+<select id="grade-set"><option value="">選んで</option><option value="１年">１年</option></select></label><br>
+<label>モード:<select id="mode">
+<option value="normal">通常</option><option value="random">ランダム</option><option value="review">復習</option></select></label><br>
+<label>レベル:<select id="level">
+<option value="easy">やさしい</option><option value="normal" selected>ふつう</option><option value="hard">むずかしい</option></select></label><br>
+<button onclick="startTest()">テスト開始</button></div>
+<div id="quiz" style="display:none;"><h2 id="kanji" style="font-size:6em;"></h2>
+<div id="reading" style="font-size:2em;"></div>
+<button onclick="answer(true)">○</button><button onclick="answer(false)">×</button>
+<progress id="progress-bar" max="100" style="width:100%"></progress>
+<button onclick="interruptTest()">中断</button></div>
+<div id="result" style="display:none;"><h2>結果</h2><p id="score"></p><p id="missed"></p>
+<button onclick="saveResult()">記録を保存</button></div>
+<script src="script.js"></script></body></html>
