@@ -1,114 +1,494 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>漢字読みテスト</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>漢字読みテスト</title>
+    <style>
+        body {
+            font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        select, input[type="date"], input[type="range"] {
+            font-size: 1em;
+            padding: 5px;
+            margin: 5px;
+        }
+        button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #missed {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            margin: auto;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 8px 12px;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .loading {
+            color: #2980b9;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-  <h1>漢字読みテスト</h1>
-
-  <div id="setup">
-    <label>検査日:
-      <input type="date" id="test-date" />
-    </label><br />
-
-    <label>学年とセット:
-      <select id="grade-set">
-        <option value="">選んでください</option>
-        <option value="１年">１年</option>
-        <option value="２年①">２年①</option>
-        <option value="２年②">２年②</option>
-        <option value="３年①">３年①</option>
-        <option value="３年②">３年②</option>
-        <option value="４年①">４年①</option>
-        <option value="４年②">４年②</option>
-        <option value="５年①">５年①</option>
-        <option value="５年②">５年②</option>
-        <option value="６年①">６年①</option>
-        <option value="６年②">６年②</option>
-      </select>
-    </label><br />
-
-    <label>モード:
-      <select id="mode">
-        <option value="normal">通常モード</option>
-        <option value="random">ランダムモード</option>
-        <option value="review">復習モード</option>
-      </select>
-    </label><br />
-
-    <label>レベル:
-      <select id="level">
-        <option value="easy">やさしい（3秒）</option>
-        <option value="normal" selected>ふつう（2秒）</option>
-        <option value="hard">むずかしい（1秒）</option>
-      </select>
-    </label><br />
-
-    <label>文字の色:
-      <select id="color-picker">
-        <option value="#e74c3c">赤</option>
-        <option value="#2c3e50">黒</option>
-        <option value="#2980b9">青</option>
-        <option value="#27ae60">緑</option>
-        <option value="#f39c12">オレンジ</option>
-        <option value="#8e44ad">紫</option>
-        <option value="#d35400">茶</option>
-        <option value="#1abc9c">水色</option>
-        <option value="#7f8c8d">グレー</option>
-        <option value="#000000">真っ黒</option>
-      </select>
-    </label><br />
-
-    <label>フォント:
-      <select id="font-select">
-        <option value="serif">明朝体</option>
-        <option value="sans-serif">ゴシック体</option>
-        <option value="monospace">等幅</option>
-        <option value="cursive">筆記体</option>
-      </select>
-    </label><br />
-
-    <label>音声の種類:
-      <select id="voice-select"></select>
-    </label><br />
-
-    <label>音声速度:
-      <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" />
-    </label><br />
-
-    <button onclick="startTest()">テスト開始</button>
-    <button onclick="showHistory()">記録を見る</button>
-  </div>
-
-  <div id="quiz" style="display:none;">
-    <div id="question-box">
-      <div id="reading" style="font-size:2em; min-height:1.5em;"></div>
-      <h2 id="kanji" style="font-size:6em;"></h2>
-      <button onclick="answer(true)">○ 読めた</button>
-      <button onclick="answer(false)">× 読めなかった</button><br />
-      <progress id="progress-bar" value="0" max="100" style="width:100%; height:20px; margin-top:20px;"></progress><br />
-      <button onclick="interruptTest()">中断する</button>
+    <h1>漢字読みテスト</h1>
+    <div id="setup">
+        <label>検査日: <input type="date" id="test-date" value="2025-07-14"></label><br>
+        <label>学年とセット:
+            <select id="grade-set">
+                <option value="">選んでください</option>
+                <option value="１年">１年</option>
+                <option value="２年①">２年①</option>
+                <option value="２年②">２年②</option>
+                <option value="３年①">３年①</option>
+                <option value="３年②">３年②</option>
+                <option value="４年①">４年①</option>
+                <option value="４年②">４年②</option>
+                <option value="５年①">５年①</option>
+                <option value="５年②">５年②</option>
+                <option value="６年①">６年①</option>
+                <option value="６年②">６年②</option>
+            </select>
+        </label><br>
+        <label>モード:
+            <select id="mode">
+                <option value="normal">通常モード</option>
+                <option value="random">ランダムモード</option>
+                <option value="review">復習モード</option>
+            </select>
+        </label><br>
+        <label>音声の種類:
+            <select id="voice-select"></select>
+        </label><br>
+        <label>音声速度:
+            <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+            <span id="rate-display">1.0</span>
+        </label><br>
+        <label>フォント:
+            <select id="font-select">
+                <option value="serif">明朝体（serif）</option>
+                <option value="sans-serif">ゴシック体（sans-serif）</option>
+                <option value="monospace">等幅（monospace）</option>
+                <option value="cursive">筆記体（cursive）</option>
+            </select>
+        </label><br>
+        <label>文字の色:
+            <select id="color-picker">
+                <option value="#e74c3c">赤</option>
+                <option value="#2c3e50">黒</option>
+                <option value="#2980b9">青</option>
+                <option value="#27ae60">緑</option>
+                <option value="#f39c12">オレンジ</option>
+                <option value="#8e44ad">紫</option>
+                <option value="#d35400">茶</option>
+                <option value="#1abc9c">水色</option>
+                <option value="#7f8c8d">グレー</option>
+                <option value="#000000">真っ黒</option>
+            </select>
+        </label><br>
+        <button onclick="startTest()">テスト開始</button>
+        <button onclick="showHistory()">記録を見る</button>
+        <div id="error-display" class="error-message" style="display:none;"></div>
+        <div id="loading" class="loading" style="display:none;">読み込み中...</div>
     </div>
-  </div>
 
-  <div id="result" style="display:none;">
-    <h2>結果</h2>
-    <p id="score" style="font-size:2em;"></p>
-    <p id="missed"></p>
-    <div id="current-result-table"></div>
-    <div id="history-table-area"></div>
-    <button onclick="saveResult()">記録を保存</button>
-    <button onclick="location.reload()">もう一度</button>
-  </div>
+    <div id="quiz" style="display:none;">
+        <div id="question-box">
+            <div id="reading" style="font-size: 2em; min-height: 1.5em; margin-bottom: 10px;"></div>
+            <h2 id="kanji" style="font-size: 6em;"></h2>
+            <button onclick="answer(true)">○ 読めた</button>
+            <button onclick="answer(false)">× 読めなかった</button><br>
+            <progress id="progress-bar" value="0" max="100" style="width: 100%; height: 20px; margin-top: 20px;"></progress><br>
+            <span id="progress-text">0 / 0</span><br>
+            <button onclick="interruptTest()">中断する</button>
+        </div>
+    </div>
 
-  <div id="history" style="display:none;">
-    <h2>過去の記録</h2>
-    <div id="history-list-table"></div>
-    <button onclick="location.reload()">戻る</button>
-  </div>
+    <div id="result" style="display:none;">
+        <h2>結果</h2>
+        <p id="score" style="font-size: 2em;"></p>
+        <p id="missed"></p>
+        <div id="current-result-table" style="margin-top: 20px;"></div>
+        <div id="history-table-area" style="margin-top: 40px;"></div>
+        <button onclick="saveResult()">記録を保存</button>
+        <button onclick="location.reload()">もう一度</button>
+    </div>
 
-  <script src="script.js"></script>
+    <div id="history" style="display:none;">
+        <h2>過去の記録</h2>
+        <div id="history-list-table"></div>
+        <button onclick="location.reload()">戻る</button>
+    </div>
+
+    <script>
+        let questions = [];
+        let current = 0;
+        let correct = 0;
+        let missed = [];
+        let selectedVoice = null;
+        let speechRate = 1;
+
+        // 音声速度表示の更新
+        document.getElementById("rate").addEventListener("input", function() {
+            document.getElementById("rate-display").textContent = this.value;
+        });
+
+        window.speechSynthesis.onvoiceschanged = () => {
+            const voiceSelect = document.getElementById("voice-select");
+            const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("ja"));
+            voiceSelect.innerHTML = "";
+            voices.forEach(voice => {
+                const option = document.createElement("option");
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+            if (!selectedVoice && voices.length > 0) {
+                selectedVoice = voices[0];
+                voiceSelect.value = voices[0].name;
+            }
+        };
+
+        // デモ用のサンプルデータ
+        const sampleData = {
+            "１年": [
+                {"kanji": "学", "reading": "がく"},
+                {"kanji": "校", "reading": "こう"},
+                {"kanji": "先", "reading": "せん"},
+                {"kanji": "生", "reading": "せい"},
+                {"kanji": "友", "reading": "とも"}
+            ],
+            "２年①": [
+                {"kanji": "読", "reading": "よ"},
+                {"kanji": "書", "reading": "か"},
+                {"kanji": "話", "reading": "はなし"},
+                {"kanji": "聞", "reading": "き"},
+                {"kanji": "見", "reading": "み"}
+            ],
+            "２年②": [
+                {"kanji": "時", "reading": "じ"},
+                {"kanji": "間", "reading": "かん"},
+                {"kanji": "分", "reading": "ふん"},
+                {"kanji": "今", "reading": "いま"},
+                {"kanji": "昨", "reading": "きのう"}
+            ]
+        };
+
+        function showError(message) {
+            const errorDiv = document.getElementById("error-display");
+            errorDiv.textContent = message;
+            errorDiv.style.display = "block";
+            setTimeout(() => {
+                errorDiv.style.display = "none";
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById("loading").style.display = show ? "block" : "none";
+        }
+
+        async function loadQuestionData(gradeSet) {
+            try {
+                showLoading(true);
+                
+                // まずサンプルデータをチェック
+                if (sampleData[gradeSet]) {
+                    return sampleData[gradeSet];
+                }
+
+                // JSONファイルの読み込みを試行
+                const response = await fetch(`data/${gradeSet}.json`);
+                
+                if (!response.ok) {
+                    throw new Error(`JSONファイル '${gradeSet}.json' が見つかりません。ステータス: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error(`JSONファイルのデータが無効です: ${gradeSet}.json`);
+                }
+
+                // データの形式を検証
+                const isValidFormat = data.every(item => 
+                    item && typeof item === 'object' && 
+                    typeof item.kanji === 'string' && 
+                    typeof item.reading === 'string'
+                );
+
+                if (!isValidFormat) {
+                    throw new Error(`JSONファイルの形式が正しくありません。各項目に 'kanji' と 'reading' プロパティが必要です。`);
+                }
+
+                return data;
+
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+                showError(`データの読み込みに失敗しました: ${error.message}`);
+                return null;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function startTest() {
+            // 進行中のテストがある場合の処理
+            const saved = JSON.parse(localStorage.getItem("kanjiTestProgress"));
+            if (saved) {
+                if (confirm("前回の途中から再開しますか？")) {
+                    loadSavedProgress(saved);
+                    return;
+                } else {
+                    localStorage.removeItem("kanjiTestProgress");
+                }
+            }
+
+            const gradeSet = document.getElementById("grade-set").value;
+            const mode = document.getElementById("mode").value;
+            const voiceSelect = document.getElementById("voice-select");
+            selectedVoice = speechSynthesis.getVoices().find(v => v.name === voiceSelect.value);
+            speechRate = parseFloat(document.getElementById("rate").value);
+
+            if (!gradeSet) {
+                alert("学年とセットを選んでください");
+                return;
+            }
+
+            // データの読み込み
+            const data = await loadQuestionData(gradeSet);
+            if (!data) {
+                return; // エラーが発生した場合は終了
+            }
+
+            questions = data;
+
+            // モードに応じた処理
+            if (mode === "random") {
+                questions = shuffleArray([...questions]);
+            } else if (mode === "review") {
+                const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+                const last = history[history.length - 1];
+                if (last && last.missed && last.missed.length > 0) {
+                    questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
+                } else {
+                    alert("復習モードの記録がありません");
+                    return;
+                }
+            }
+
+            // テスト初期化
+            current = 0;
+            correct = 0;
+            missed = [];
+            
+            // 画面切り替え
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            document.getElementById("result").style.display = "none";
+            
+            showQuestion();
+        }
+
+        function loadSavedProgress(saved) {
+            current = saved.current;
+            correct = saved.correct;
+            missed = saved.missed;
+            questions = saved.questions;
+            document.getElementById("test-date").value = saved.date || "";
+            document.getElementById("grade-set").value = saved.gradeSet;
+            document.getElementById("mode").value = saved.mode;
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            document.getElementById("result").style.display = "none";
+            showQuestion();
+        }
+
+        function saveCurrentProgress() {
+            const progress = {
+                current,
+                correct,
+                missed,
+                questions,
+                gradeSet: document.getElementById("grade-set").value,
+                mode: document.getElementById("mode").value,
+                date: document.getElementById("test-date").value
+            };
+            localStorage.setItem("kanjiTestProgress", JSON.stringify(progress));
+        }
+
+        function showQuestion() {
+            if (current >= questions.length) {
+                showResult();
+                return;
+            }
+            
+            const kanjiElement = document.getElementById("kanji");
+            const readingElement = document.getElementById("reading");
+            
+            kanjiElement.textContent = questions[current].kanji;
+            readingElement.textContent = "";
+            
+            applyFontAndColor();
+            updateProgressBar();
+            
+            setTimeout(() => {
+                const readingText = questions[current].reading;
+                readingElement.textContent = readingText;
+                speak(readingText);
+            }, 2000);
+        }
+
+        function answer(isCorrect) {
+            if (isCorrect) {
+                correct++;
+            } else {
+                missed.push(questions[current]);
+            }
+            saveCurrentProgress();
+            current++;
+            showQuestion();
+        }
+
+        function interruptTest() {
+            saveCurrentProgress();
+            location.reload();
+        }
+
+        function updateProgressBar() {
+            const percent = questions.length > 0 ? Math.round((current / questions.length) * 100) : 0;
+            document.getElementById("progress-bar").value = percent;
+            document.getElementById("progress-text").textContent = `${current} / ${questions.length}`;
+        }
+
+        function speak(text) {
+            if (!selectedVoice) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.voice = selectedVoice;
+            utter.lang = "ja-JP";
+            utter.rate = speechRate;
+            speechSynthesis.speak(utter);
+        }
+
+        function applyFontAndColor() {
+            const font = document.getElementById("font-select").value;
+            const color = document.getElementById("color-picker").value;
+            const kanjiElem = document.getElementById("kanji");
+            const readingElem = document.getElementById("reading");
+            kanjiElem.style.fontFamily = font;
+            kanjiElem.style.color = color;
+            readingElem.style.fontFamily = font;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showResult() {
+            localStorage.removeItem("kanjiTestProgress");
+            document.getElementById("quiz").style.display = "none";
+            document.getElementById("result").style.display = "block";
+            const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+            document.getElementById("score").textContent = `得点: ${score}点 (${correct}/${questions.length})`;
+            document.getElementById("missed").textContent = missed.length > 0 ? 
+                "読めなかった漢字: " + missed.map(k => k.kanji).join(", ") : 
+                "すべて読めました！";
+            showHistoryTable();
+            showCurrentResultTable(score);
+        }
+
+        function showCurrentResultTable(score) {
+            const date = document.getElementById("test-date").value;
+            const gradeSet = document.getElementById("grade-set").value;
+            const mode = document.getElementById("mode").value;
+            const html = `
+                <table border="1">
+                    <tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>
+                    <tr><td>${date}</td><td>${gradeSet}</td><td>${mode}</td><td>${score}点</td><td>${missed.map(k => k.kanji).join(", ")}</td></tr>
+                </table>`;
+            document.getElementById("current-result-table").innerHTML = html;
+        }
+
+        function saveResult() {
+            const date = document.getElementById("test-date").value;
+            const gradeSet = document.getElementById("grade-set").value;
+            const mode = document.getElementById("mode").value;
+            const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+            const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+            history.push({ date, gradeSet, mode, score, missed });
+            localStorage.setItem("kanjiTestHistory", JSON.stringify(history));
+            alert("記録を保存しました");
+        }
+
+        function showHistory() {
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("history").style.display = "block";
+            const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+            const area = document.getElementById("history-list-table");
+            if (!history.length) {
+                area.innerHTML = "<p>記録がありません</p>";
+                return;
+            }
+            let html = "<table border='1'><tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>";
+            history.reverse().forEach(h => {
+                const missedKanji = h.missed ? h.missed.map(k => k.kanji || k).join(", ") : "";
+                html += `<tr><td>${h.date}</td><td>${h.gradeSet}</td><td>${h.mode}</td><td>${h.score}点</td><td>${missedKanji}</td></tr>`;
+            });
+            html += "</table>";
+            area.innerHTML = html;
+        }
+
+        function showHistoryTable() {
+            const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+            const area = document.getElementById("history-table-area");
+            if (!history.length) return;
+            
+            let html = "<h3>過去の記録</h3><table border='1'><tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>";
+            history.slice(-5).reverse().forEach(h => {
+                const missedKanji = h.missed ? h.missed.map(k => k.kanji || k).join(", ") : "";
+                html += `<tr><td>${h.date}</td><td>${h.gradeSet}</td><td>${h.mode}</td><td>${h.score}点</td><td>${missedKanji}</td></tr>`;
+            });
+            html += "</table>";
+            area.innerHTML = html;
+        }
+
+        // 初期化
+        window.speechSynthesis.onvoiceschanged();
+    </script>
 </body>
 </html>
