@@ -181,30 +181,7 @@
             }
         };
 
-        // デモ用のサンプルデータ
-        const sampleData = {
-            "１年": [
-                {"kanji": "学", "reading": "がく"},
-                {"kanji": "校", "reading": "こう"},
-                {"kanji": "先", "reading": "せん"},
-                {"kanji": "生", "reading": "せい"},
-                {"kanji": "友", "reading": "とも"}
-            ],
-            "２年①": [
-                {"kanji": "読", "reading": "よ"},
-                {"kanji": "書", "reading": "か"},
-                {"kanji": "話", "reading": "はなし"},
-                {"kanji": "聞", "reading": "き"},
-                {"kanji": "見", "reading": "み"}
-            ],
-            "２年②": [
-                {"kanji": "時", "reading": "じ"},
-                {"kanji": "間", "reading": "かん"},
-                {"kanji": "分", "reading": "ふん"},
-                {"kanji": "今", "reading": "いま"},
-                {"kanji": "昨", "reading": "きのう"}
-            ]
-        };
+
 
         function showError(message) {
             const errorDiv = document.getElementById("error-display");
@@ -223,12 +200,7 @@
             try {
                 showLoading(true);
                 
-                // まずサンプルデータをチェック
-                if (sampleData[gradeSet]) {
-                    return sampleData[gradeSet];
-                }
-
-                // JSONファイルの読み込みを試行
+                // JSONファイルの読み込み
                 const response = await fetch(`data/${gradeSet}.json`);
                 
                 if (!response.ok) {
