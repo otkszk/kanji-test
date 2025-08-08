@@ -65,7 +65,7 @@
 <body>
     <h1>漢字読みテスト</h1>
     <div id="setup">
-        <label>検査日: <input type="date" id="test-date" value="2025-07-14"></label><br>
+        <label>検査日: <input type="date" id="test-date"></label><br>
         <label>学年とセット:
             <select id="grade-set">
                 <option value="">選んでください</option>
@@ -83,7 +83,11 @@
             </select>
         </label><br>
         <label>モード:
-            <select id="mode"><option value="ten">10問テストモード</option><option value="normal">通常モード</option><option value="random">ランダムモード</option><option value="review">復習モード</option></select>
+            <select id="mode">
+<option value="ten">10問テストモード</option>
+<option value="normal">通常モード</option>
+<option value="random">ランダムモード</option>
+<option value="review">復習モード</option></select>
         </label><br>
         <label>音声の種類:
             <select id="voice-select"></select>
@@ -460,4 +464,3 @@
     </script>
 </body>
 </html>
-
