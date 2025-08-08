@@ -34,7 +34,7 @@ function startTest() {
       }
 
       if (mode === "ten") {
-        questions = shuffle(data).slice(0, 10);
+        questions = shuffle([...data]).slice(0, 10);  // 必ず10問
       } else if (mode === "random") {
         questions = shuffle(data);
       } else if (mode === "review") {
@@ -114,10 +114,16 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
-function interruptTest() {
-  if (confirm("中断して最初の画面に戻りますか？")) {
-    location.reload();
-  }
+function cancelTest() {
+  // 状態を初期化してsetup画面へ戻る
+  questions = [];
+  currentIndex = 0;
+  correctCount = 0;
+  missedQuestions = [];
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").style.display = "none";
+  document.getElementById("history").style.display = "none";
+  document.getElementById("setup").style.display = "block";
 }
 
 function showResult() {
