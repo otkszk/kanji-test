@@ -6,16 +6,16 @@ let delayMs = 2000;
 let selectedVoice = null;
 
 function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 async function startTest() {
   const grade = document.getElementById("grade-set").value;
   const mode = document.getElementById("mode").value;
-  const voiceSelect = document.getElementById("voice-select");
-  const selectedVoiceName = voiceSelect.value;
-  const voices = speechSynthesis.getVoices();
-  selectedVoice = voices.find(v => v.name === selectedVoiceName);
 
   if (!grade) {
     alert("学年とセットを選んでください");
@@ -28,15 +28,14 @@ async function startTest() {
 
     const data = await response.json();
     if (!Array.isArray(data) || data.length === 0) {
-      alert("データが存在しません");
+      alert("問題データが見つかりません");
       return;
     }
 
-    // ✅ モードごとの処理
     if (mode === "ten") {
-      questions = shuffle([...data]).slice(0, 10);
+      questions = shuffle(data).slice(0, 10); // ✅ 10問だけ出題
     } else if (mode === "random") {
-      questions = shuffle([...data]);
+      questions = shuffle(data);
     } else if (mode === "review") {
       const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
       const last = history[history.length - 1];
@@ -50,19 +49,25 @@ async function startTest() {
       questions = data;
     }
 
+    // 音声設定
+    const voiceSelect = document.getElementById("voice-select");
+    const selectedVoiceName = voiceSelect.value;
+    selectedVoice = speechSynthesis.getVoices().find(v => v.name === selectedVoiceName);
+
+    // 状態初期化
     currentIndex = 0;
     correctCount = 0;
     missedQuestions = [];
 
-    // 表示切替
+    // 画面切り替え
     document.getElementById("setup").style.display = "none";
     document.getElementById("quiz").style.display = "block";
     document.getElementById("result").style.display = "none";
     document.getElementById("history").style.display = "none";
 
     showQuestion();
-  } catch (err) {
-    alert("エラーが発生しました: " + err.message);
+  } catch (error) {
+    alert("エラーが発生しました: " + error.message);
   }
 }
 
@@ -111,20 +116,17 @@ function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ja-JP";
   utterance.rate = parseFloat(document.getElementById("rate").value);
-  const selectedVoiceName = document.getElementById("voice-select").value;
-  const selectedVoice = speechSynthesis.getVoices().find(v => v.name === selectedVoiceName);
   if (selectedVoice) utterance.voice = selectedVoice;
   speechSynthesis.speak(utterance);
 }
 
-// ✅ 「やめる」ボタンでメニュー画面に戻す
+// ✅ 「やめる」ボタン → 初期画面へ戻す
 function cancelTest() {
   questions = [];
   currentIndex = 0;
   correctCount = 0;
   missedQuestions = [];
 
-  // 全画面リセット
   document.getElementById("quiz").style.display = "none";
   document.getElementById("result").style.display = "none";
   document.getElementById("history").style.display = "none";
