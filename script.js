@@ -9,7 +9,7 @@ function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
 
-function startTest() {
+async function startTest() {
   const grade = document.getElementById("grade-set").value;
   const mode = document.getElementById("mode").value;
   const voiceSelect = document.getElementById("voice-select");
@@ -22,45 +22,48 @@ function startTest() {
     return;
   }
 
-  fetch(`data/${grade}.json`)
-    .then(res => {
-      if (!res.ok) throw new Error("データの読み込みに失敗しました");
-      return res.json();
-    })
-    .then(data => {
-      if (!Array.isArray(data) || data.length === 0) {
-        alert("問題データが存在しません");
+  try {
+    const response = await fetch(`data/${grade}.json`);
+    if (!response.ok) throw new Error("データの読み込みに失敗しました");
+
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      alert("データが存在しません");
+      return;
+    }
+
+    // ✅ モードごとの処理
+    if (mode === "ten") {
+      questions = shuffle([...data]).slice(0, 10);
+    } else if (mode === "random") {
+      questions = shuffle([...data]);
+    } else if (mode === "review") {
+      const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+      const last = history[history.length - 1];
+      if (last && last.missed && last.missed.length > 0) {
+        questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
+      } else {
+        alert("復習モードの記録がありません");
         return;
       }
+    } else {
+      questions = data;
+    }
 
-      if (mode === "ten") {
-        questions = shuffle([...data]).slice(0, 10);  // 必ず10問
-      } else if (mode === "random") {
-        questions = shuffle(data);
-      } else if (mode === "review") {
-        const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
-        const last = history[history.length - 1];
-        if (last && last.missed && last.missed.length > 0) {
-          questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
-        } else {
-          alert("復習モードの記録がありません");
-          return;
-        }
-      } else {
-        questions = data;
-      }
+    currentIndex = 0;
+    correctCount = 0;
+    missedQuestions = [];
 
-      currentIndex = 0;
-      correctCount = 0;
-      missedQuestions = [];
+    // 表示切替
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("history").style.display = "none";
 
-      document.getElementById("setup").style.display = "none";
-      document.getElementById("quiz").style.display = "block";
-      showQuestion();
-    })
-    .catch(err => {
-      alert("エラーが発生しました: " + err.message);
-    });
+    showQuestion();
+  } catch (err) {
+    alert("エラーが発生しました: " + err.message);
+  }
 }
 
 function showQuestion() {
@@ -114,12 +117,14 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
+// ✅ 「やめる」ボタンでメニュー画面に戻す
 function cancelTest() {
-  // 状態を初期化してsetup画面へ戻る
   questions = [];
   currentIndex = 0;
   correctCount = 0;
   missedQuestions = [];
+
+  // 全画面リセット
   document.getElementById("quiz").style.display = "none";
   document.getElementById("result").style.display = "none";
   document.getElementById("history").style.display = "none";
