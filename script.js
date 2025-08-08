@@ -4,31 +4,60 @@ let correctCount = 0;
 let missedQuestions = [];
 let delayMs = 2000;
 
+
 function startTest() {
-  const dateInput = document.getElementById("test-date");
-  const today = new Date().toISOString().split("T")[0];
-  dateInput.value = today;
+    const dateInput = document.getElementById("test-date");
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.value = today;
 
-  const level = document.getElementById("level").value;
-  if (level === "easy") delayMs = 3000;
-  else if (level === "normal") delayMs = 2000;
-  else delayMs = 1000;
+    const level = document.getElementById("level").value;
+    if (level === "easy") delayMs = 3000;
+    else if (level === "normal") delayMs = 2000;
+    else delayMs = 1000;
 
-  // 仮データ：本番では選択された学年・モードから取得
-  questions = [
-    { kanji: "日", reading: "にち" },
-    { kanji: "月", reading: "げつ" },
-    { kanji: "火", reading: "か" }
-  ];
+    const mode = document.getElementById("mode").value;
+    const grade = document.getElementById("grade-set").value;
 
-  currentIndex = 0;
-  correctCount = 0;
-  missedQuestions = [];
+    let allQuestions = [
+        { kanji: "日", reading: "にち" },
+        { kanji: "月", reading: "げつ" },
+        { kanji: "火", reading: "か" },
+        { kanji: "水", reading: "すい" },
+        { kanji: "木", reading: "もく" },
+        { kanji: "金", reading: "きん" },
+        { kanji: "土", reading: "ど" },
+        { kanji: "山", reading: "やま" },
+        { kanji: "川", reading: "かわ" },
+        { kanji: "田", reading: "た" },
+        { kanji: "空", reading: "そら" },
+        { kanji: "雨", reading: "あめ" },
+        { kanji: "風", reading: "かぜ" }
+    ];
 
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("quiz").style.display = "block";
-  showQuestion();
+    if (mode === "test10") {
+        questions = shuffleArray(allQuestions).slice(0, 10);
+    } else {
+        questions = allQuestions;
+    }
+
+    currentIndex = 0;
+    correctCount = 0;
+    missedQuestions = [];
+
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    showQuestion();
 }
+
+function shuffleArray(array) {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+}
+
 
 function showQuestion() {
   if (currentIndex >= questions.length) {
