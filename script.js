@@ -3,6 +3,7 @@ let currentIndex = 0;
 let correctCount = 0;
 let missedQuestions = [];
 let delayMs = 2000;
+let selectedVoice = null;
 
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -27,6 +28,11 @@ function startTest() {
       return res.json();
     })
     .then(data => {
+      if (!Array.isArray(data) || data.length === 0) {
+        alert("問題データが存在しません");
+        return;
+      }
+
       if (mode === "ten") {
         questions = shuffle(data).slice(0, 10);
       } else if (mode === "random") {
@@ -120,8 +126,15 @@ function showResult() {
 
   const scoreText = `正解数: ${correctCount} / ${questions.length}`;
   document.getElementById("score").textContent = scoreText;
+
   const missed = missedQuestions.map(q => q.kanji).join(", ");
-  document.getElementById("missed").textContent = missed ? "読めなかった漢字: " + missed : "すべて読めました！";
+  const missedElem = document.getElementById("missed");
+
+  if (correctCount === questions.length) {
+    missedElem.textContent = "🎉 全問正解おめでとうございます！ 🎉";
+  } else {
+    missedElem.textContent = missed ? "読めなかった漢字: " + missed : "すべて読めました！";
+  }
 
   const date = document.getElementById("test-date").value;
   const grade = document.getElementById("grade-set").value;
