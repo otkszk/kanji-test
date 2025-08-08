@@ -4,53 +4,70 @@ let correctCount = 0;
 let missedQuestions = [];
 let delayMs = 2000;
 
-function startTest() {
-  const dateInput = document.getElementById("test-date");
-  const today = new Date().toISOString().split("T")[0];
-  dateInput.value = today;
+import json
+import random
 
-  const level = document.getElementById("level").value;
-  if (level === "easy") delayMs = 3000;
-  else if (level === "normal") delayMs = 2000;
-  else delayMs = 1000;
+# Load the script file
+with open("script.js", "r", encoding="utf-8") as f:
+    script_lines = f.readlines()
 
-  // 仮データ：本番では選択された学年・モードから取得
-  const mode = document.getElementById("mode").value;
-  const grade = document.getElementById("grade-set").value;
-  fetch(`data/${grade}.json`)
-    .then(res => res.json())
-    .then(data => {
-      if (mode === "ten") {
-        questions = data.sort(() => 0.5 - Math.random()).slice(0, 10);
-      } else {
-        questions = data;
-      }
-      currentIndex = 0;
-      correctCount = 0;
-      missedQuestions = [];
-      document.getElementById("setup").style.display = "none";
-      document.getElementById("quiz").style.display = "block";
-      showQuestion();
-    });
-    { kanji: "日", reading: "にち" },
-    { kanji: "月", reading: "げつ" },
-    { kanji: "火", reading: "か" }
-  ];
+# Modify the startTest function to implement "10問テストモード"
+modified_lines = []
+in_start_test = False
+for line in script_lines:
+    stripped = line.strip()
+    if stripped.startswith("function startTest()"):
+        in_start_test = True
+    if in_start_test and stripped.startswith("questions = ["):
+        # Replace the hardcoded questions with fetch logic
+        modified_lines.append("  const mode = document.getElementById(\"mode\").value;\n")
+        modified_lines.append("  const grade = document.getElementById(\"grade-set\").value;\n")
+        modified_lines.append("  fetch(`data/${grade}.json`)\n")
+        modified_lines.append("    .then(res => res.json())\n")
+        modified_lines.append("    .then(data => {\n")
+        modified_lines.append("      if (mode === \"ten\") {\n")
+        modified_lines.append("        questions = data.sort(() => 0.5 - Math.random()).slice(0, 10);\n")
+        modified_lines.append("      } else {\n")
+        modified_lines.append("        questions = data;\n")
+        modified_lines.append("      }\n")
+        modified_lines.append("      currentIndex = 0;\n")
+        modified_lines.append("      correctCount = 0;\n")
+        modified_lines.append("      missedQuestions = [];\n")
+        modified_lines.append("      document.getElementById(\"setup\").style.display = \"none\";\n")
+        modified_lines.append("      document.getElementById(\"quiz\").style.display = \"block\";\n")
+        modified_lines.append("      showQuestion();\n")
+        modified_lines.append("    });\n")
+        in_start_test = False
+        continue
+    if in_start_test and stripped.startswith("currentIndex = 0;"):
+        continue  # skip original initialization
+    if in_start_test and stripped.startswith("correctCount = 0;"):
+        continue
+    if in_start_test and stripped.startswith("missedQuestions = [];"):
+        continue
+    if in_start_test and stripped.startswith("document.getElementById(\"setup\")"):
+        continue
+    if in_start_test and stripped.startswith("document.getElementById(\"quiz\")"):
+        continue
+    if in_start_test and stripped.startswith("showQuestion();"):
+        continue
+    modified_lines.append(line)
 
-  currentIndex = 0;
-  correctCount = 0;
-  missedQuestions = [];
+# Modify updateProgress to ensure progress bar reflects 10 questions
+new_script = []
+for line in modified_lines:
+    if "progress.value =" in line:
+        new_script.append("  progress.max = questions.length;\n")
+        new_script.append("  progress.value = currentIndex;\n")
+    else:
+        new_script.append(line)
 
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("quiz").style.display = "block";
-  showQuestion();
-}
+# Save the modified script
+with open("script 1_modified.js", "w", encoding="utf-8") as f:
+    f.writelines(new_script)
 
-function showQuestion() {
-  if (currentIndex >= questions.length) {
-    showResult();
-    return;
-  }
+print("script 1.js has been modified and saved as script 1_modified.js with 10問テストモード implemented.")
+
 
   const question = questions[currentIndex];
   const kanjiElem = document.getElementById("kanji");
@@ -96,8 +113,7 @@ function speak(text) {
 
 function updateProgress() {
   const progress = document.getElementById("progress-bar");
-  progress.max = questions.length;
-  progress.value = currentIndex;
+  progress.value = ((currentIndex) / questions.length) * 100;
 }
 
 function showResult() {
