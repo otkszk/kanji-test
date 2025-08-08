@@ -5,25 +5,6 @@ let missedQuestions = [];
 let delayMs = 2000;
 
 function startTest() {
-
-    const mode = document.getElementById("mode").value;
-    if (mode === "ten") {
-        // Load full question set based on selected grade
-        const grade = document.getElementById("grade-set").value;
-        fetch(`data/${grade}.json`)
-            .then(response => response.json())
-            .then(data => {
-                // Shuffle and select 10 questions
-                questions = data.sort(() => 0.5 - Math.random()).slice(0, 10);
-                currentIndex = 0;
-                correctCount = 0;
-                missedQuestions = [];
-                document.getElementById("setup").style.display = "none";
-                document.getElementById("quiz").style.display = "block";
-                showQuestion();
-            });
-        return;
-    }
   const dateInput = document.getElementById("test-date");
   const today = new Date().toISOString().split("T")[0];
   dateInput.value = today;
@@ -34,7 +15,23 @@ function startTest() {
   else delayMs = 1000;
 
   // 仮データ：本番では選択された学年・モードから取得
-  questions = [
+  const mode = document.getElementById("mode").value;
+  const grade = document.getElementById("grade-set").value;
+  fetch(`data/${grade}.json`)
+    .then(res => res.json())
+    .then(data => {
+      if (mode === "ten") {
+        questions = data.sort(() => 0.5 - Math.random()).slice(0, 10);
+      } else {
+        questions = data;
+      }
+      currentIndex = 0;
+      correctCount = 0;
+      missedQuestions = [];
+      document.getElementById("setup").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      showQuestion();
+    });
     { kanji: "日", reading: "にち" },
     { kanji: "月", reading: "げつ" },
     { kanji: "火", reading: "か" }
@@ -99,7 +96,8 @@ function speak(text) {
 
 function updateProgress() {
   const progress = document.getElementById("progress-bar");
-  progress.value = ((currentIndex) / questions.length) * 100;
+  progress.max = questions.length;
+  progress.value = currentIndex;
 }
 
 function showResult() {
