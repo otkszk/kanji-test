@@ -4,76 +4,69 @@ let correctCount = 0;
 let missedQuestions = [];
 let delayMs = 2000;
 
-import json
-import random
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
-# Load the script file
-with open("script.js", "r", encoding="utf-8") as f:
-    script_lines = f.readlines()
+function startTest() {
+  const grade = document.getElementById("grade-set").value;
+  const mode = document.getElementById("mode").value;
+  const voiceSelect = document.getElementById("voice-select");
+  const selectedVoiceName = voiceSelect.value;
+  const voices = speechSynthesis.getVoices();
+  selectedVoice = voices.find(v => v.name === selectedVoiceName);
 
-# Modify the startTest function to implement "10問テストモード"
-modified_lines = []
-in_start_test = False
-for line in script_lines:
-    stripped = line.strip()
-    if stripped.startswith("function startTest()"):
-        in_start_test = True
-    if in_start_test and stripped.startswith("questions = ["):
-        # Replace the hardcoded questions with fetch logic
-        modified_lines.append("  const mode = document.getElementById(\"mode\").value;\n")
-        modified_lines.append("  const grade = document.getElementById(\"grade-set\").value;\n")
-        modified_lines.append("  fetch(`data/${grade}.json`)\n")
-        modified_lines.append("    .then(res => res.json())\n")
-        modified_lines.append("    .then(data => {\n")
-        modified_lines.append("      if (mode === \"ten\") {\n")
-        modified_lines.append("        questions = data.sort(() => 0.5 - Math.random()).slice(0, 10);\n")
-        modified_lines.append("      } else {\n")
-        modified_lines.append("        questions = data;\n")
-        modified_lines.append("      }\n")
-        modified_lines.append("      currentIndex = 0;\n")
-        modified_lines.append("      correctCount = 0;\n")
-        modified_lines.append("      missedQuestions = [];\n")
-        modified_lines.append("      document.getElementById(\"setup\").style.display = \"none\";\n")
-        modified_lines.append("      document.getElementById(\"quiz\").style.display = \"block\";\n")
-        modified_lines.append("      showQuestion();\n")
-        modified_lines.append("    });\n")
-        in_start_test = False
-        continue
-    if in_start_test and stripped.startswith("currentIndex = 0;"):
-        continue  # skip original initialization
-    if in_start_test and stripped.startswith("correctCount = 0;"):
-        continue
-    if in_start_test and stripped.startswith("missedQuestions = [];"):
-        continue
-    if in_start_test and stripped.startswith("document.getElementById(\"setup\")"):
-        continue
-    if in_start_test and stripped.startswith("document.getElementById(\"quiz\")"):
-        continue
-    if in_start_test and stripped.startswith("showQuestion();"):
-        continue
-    modified_lines.append(line)
+  if (!grade) {
+    alert("学年とセットを選んでください");
+    return;
+  }
 
-# Modify updateProgress to ensure progress bar reflects 10 questions
-new_script = []
-for line in modified_lines:
-    if "progress.value =" in line:
-        new_script.append("  progress.max = questions.length;\n")
-        new_script.append("  progress.value = currentIndex;\n")
-    else:
-        new_script.append(line)
+  fetch(`data/${grade}.json`)
+    .then(res => {
+      if (!res.ok) throw new Error("データの読み込みに失敗しました");
+      return res.json();
+    })
+    .then(data => {
+      if (mode === "ten") {
+        questions = shuffle(data).slice(0, 10);
+      } else if (mode === "random") {
+        questions = shuffle(data);
+      } else if (mode === "review") {
+        const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+        const last = history[history.length - 1];
+        if (last && last.missed && last.missed.length > 0) {
+          questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
+        } else {
+          alert("復習モードの記録がありません");
+          return;
+        }
+      } else {
+        questions = data;
+      }
 
-# Save the modified script
-with open("script 1_modified.js", "w", encoding="utf-8") as f:
-    f.writelines(new_script)
+      currentIndex = 0;
+      correctCount = 0;
+      missedQuestions = [];
 
-print("script 1.js has been modified and saved as script 1_modified.js with 10問テストモード implemented.")
+      document.getElementById("setup").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      showQuestion();
+    })
+    .catch(err => {
+      alert("エラーが発生しました: " + err.message);
+    });
+}
 
+function showQuestion() {
+  if (currentIndex >= questions.length) {
+    showResult();
+    return;
+  }
 
   const question = questions[currentIndex];
   const kanjiElem = document.getElementById("kanji");
   const readingElem = document.getElementById("reading");
 
-  // フォント・色反映
   const font = document.getElementById("font-select").value;
   const color = document.getElementById("color-picker").value;
   kanjiElem.style.fontFamily = font;
@@ -81,11 +74,9 @@ print("script 1.js has been modified and saved as script 1_modified.js with 10�
   kanjiElem.style.fontSize = "6em";
   readingElem.style.fontSize = "2em";
 
-  // 表示
   kanjiElem.textContent = question.kanji;
   readingElem.textContent = "";
 
-  // delay後に表示＆音声
   setTimeout(() => {
     readingElem.textContent = question.reading;
     speak(question.reading);
@@ -101,6 +92,12 @@ function answer(isCorrect) {
   showQuestion();
 }
 
+function updateProgress() {
+  const progress = document.getElementById("progress-bar");
+  progress.value = ((currentIndex) / questions.length) * 100;
+  document.getElementById("progress-text").textContent = `${currentIndex} / ${questions.length}`;
+}
+
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ja-JP";
@@ -111,71 +108,63 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
-function updateProgress() {
-  const progress = document.getElementById("progress-bar");
-  progress.value = ((currentIndex) / questions.length) * 100;
-}
-
-function showResult() {
-  document.getElementById("quiz").style.display = "none";
-  document.getElementById("result").style.display = "block";
-  document.getElementById("score").textContent =
-    `正解数: ${correctCount} / ${questions.length}`;
-
-  const missed = missedQuestions.map(q => q.kanji).join(", ");
-  document.getElementById("missed").textContent = "読めなかった漢字: " + missed;
-
-  const date = document.getElementById("test-date").value;
-  const grade = document.getElementById("grade-set").value;
-  const mode = document.getElementById("mode").value;
-  const score = `${correctCount}/${questions.length}`;
-
-  const currentTable = `
-    <table>
-      <tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>
-      <tr><td>${date}</td><td>${grade}</td><td>${mode}</td><td>${score}</td><td>${missed}</td></tr>
-    </table>
-  `;
-  document.getElementById("current-result-table").innerHTML = currentTable;
-}
-
 function interruptTest() {
   if (confirm("中断して最初の画面に戻りますか？")) {
     location.reload();
   }
 }
 
-function saveResult() {
-  const history = JSON.parse(localStorage.getItem("kanji_history") || "[]");
+function showResult() {
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").style.display = "block";
+
+  const scoreText = `正解数: ${correctCount} / ${questions.length}`;
+  document.getElementById("score").textContent = scoreText;
+  const missed = missedQuestions.map(q => q.kanji).join(", ");
+  document.getElementById("missed").textContent = missed ? "読めなかった漢字: " + missed : "すべて読めました！";
+
   const date = document.getElementById("test-date").value;
   const grade = document.getElementById("grade-set").value;
   const mode = document.getElementById("mode").value;
+
+  const currentTable = `
+    <table>
+      <tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>
+      <tr><td>${date}</td><td>${grade}</td><td>${mode}</td><td>${correctCount}/${questions.length}</td><td>${missed}</td></tr>
+    </table>
+  `;
+  document.getElementById("current-result-table").innerHTML = currentTable;
+  saveResult();
+}
+
+function saveResult() {
+  const date = document.getElementById("test-date").value;
+  const grade = document.getElementById("grade-set").value;
+  const mode = document.getElementById("mode").value;
+  const missed = missedQuestions.map(q => q.kanji);
   const score = `${correctCount}/${questions.length}`;
-  const missed = missedQuestions.map(q => q.kanji).join(", ");
-  history.push({ date, grade, mode, score, missed });
-  localStorage.setItem("kanji_history", JSON.stringify(history));
-  alert("記録を保存しました");
+  const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+  history.push({ date, gradeSet: grade, mode, score, missed });
+  localStorage.setItem("kanjiTestHistory", JSON.stringify(history));
 }
 
 function showHistory() {
   document.getElementById("setup").style.display = "none";
   document.getElementById("history").style.display = "block";
 
-  const history = JSON.parse(localStorage.getItem("kanji_history") || "[]");
+  const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
   let html = "<table><tr><th>実施日</th><th>学年</th><th>モード</th><th>点数</th><th>読めなかった漢字</th></tr>";
-  for (const record of history) {
-    html += `<tr><td>${record.date}</td><td>${record.grade}</td><td>${record.mode}</td><td>${record.score}</td><td>${record.missed}</td></tr>`;
+  for (const record of history.reverse()) {
+    html += `<tr><td>${record.date}</td><td>${record.gradeSet}</td><td>${record.mode}</td><td>${record.score}</td><td>${record.missed.join(", ")}</td></tr>`;
   }
   html += "</table>";
   document.getElementById("history-list-table").innerHTML = html;
 }
 
 window.addEventListener("load", () => {
-  // 日付初期化
   const dateInput = document.getElementById("test-date");
   dateInput.value = new Date().toISOString().split("T")[0];
 
-  // 音声読み上げの初期化
   const voiceSelect = document.getElementById("voice-select");
   function loadVoices() {
     voiceSelect.innerHTML = "";
