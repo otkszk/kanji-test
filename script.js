@@ -220,4 +220,7 @@ window.addEventListener("load", () => {
   loadVoices();
 
   // スマホ対策: voiceschanged イベントでも読み込み
-  if (typeof speechSynthesis !== "
+  if (typeof speechSynthesis !== "undefined") {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+});
