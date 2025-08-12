@@ -216,7 +216,3 @@ function loadVoices() {
     voiceSelect.appendChild(option);
   }
 }
-
-  loadVoices();
-  speechSynthesis.onvoiceschanged = loadVoices;
-});
