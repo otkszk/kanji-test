@@ -195,20 +195,21 @@ window.addEventListener("load", () => {
     const voiceSelect = document.getElementById("voice-select");
     voiceSelect.innerHTML = "";
 
-    // 日本語音声だけ取得
-    const japaneseVoices = speechSynthesis.getVoices()
-      .filter(v => v.lang && v.lang.startsWith("ja"))
-      .slice(0, 5); // 最大5つ
+    let japaneseVoices = speechSynthesis.getVoices()
+      .filter(v => v.lang && v.lang.startsWith("ja"));
 
-    japaneseVoices.forEach(v => {
-      const option = document.createElement("option");
-      option.value = v.name;
-      option.textContent = `${v.name} (${v.lang})`;
-      voiceSelect.appendChild(option);
-    });
+    // 最大5件に制限
+    japaneseVoices = japaneseVoices.slice(0, 5);
 
-    // フォールバック
-    if (japaneseVoices.length === 0) {
+    if (japaneseVoices.length > 0) {
+      japaneseVoices.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v.name;
+        option.textContent = `${v.name} (${v.lang})`;
+        voiceSelect.appendChild(option);
+      });
+    } else {
+      // 日本語音声が取得できないときのフォールバック
       const option = document.createElement("option");
       option.value = "";
       option.textContent = "日本語音声が見つかりません";
@@ -216,10 +217,10 @@ window.addEventListener("load", () => {
     }
   }
 
-  // 音声リスト読み込み
-  loadVoices();
+  // ページロード直後に少し遅延して読み込み
+  setTimeout(loadVoices, 500);
 
-  // スマホ対策: voiceschanged イベントでも読み込み
+  // イベントでの再読み込み
   if (typeof speechSynthesis !== "undefined") {
     speechSynthesis.onvoiceschanged = loadVoices;
   }
