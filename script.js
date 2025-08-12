@@ -14,6 +14,20 @@ function shuffle(array) {
 }
 
 async function startTest() {
+
+ // ==== iOS用 初回音声再生の許可 ====
+  try {
+    const dummyUtterance = new SpeechSynthesisUtterance("テストを開始します");
+    dummyUtterance.lang = "ja-JP";
+    const selectedVoiceName = document.getElementById("voice-select").value;
+    const voice = speechSynthesis.getVoices().find(v => v.name === selectedVoiceName);
+    if (voice) dummyUtterance.voice = voice;
+    speechSynthesis.speak(dummyUtterance);
+  } catch (e) {
+    console.warn("音声初期化エラー:", e);
+  }
+  // ===================================
+
   const grade = document.getElementById("grade-set").value;
   const mode = document.getElementById("mode").value;
 
@@ -93,7 +107,7 @@ function showQuestion() {
 
   setTimeout(() => {
     readingElem.textContent = question.reading;
-    speak(question.reading);
+    speak(question.reading,true);
   }, delayMs);
 
   updateProgress();
@@ -112,13 +126,20 @@ function updateProgress() {
   document.getElementById("progress-text").textContent = `${currentIndex} / ${questions.length}`;
 }
 
-function speak(text) {
+function speak(text, allowIOS = false) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ja-JP";
   utterance.rate = parseFloat(document.getElementById("rate").value);
   if (selectedVoice) utterance.voice = selectedVoice;
-  speechSynthesis.speak(utterance);
+
+  // iOSでの連続再生許可対策
+  if (allowIOS) {
+    setTimeout(() => speechSynthesis.speak(utterance), 0);
+  } else {
+    speechSynthesis.speak(utterance);
+  }
 }
+
 
 // ✅ 「やめる」ボタン → 初期画面へ戻す
 function cancelTest() {
