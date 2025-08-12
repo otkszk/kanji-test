@@ -126,18 +126,29 @@ function updateProgress() {
   document.getElementById("progress-text").textContent = `${currentIndex} / ${questions.length}`;
 }
 
-function speak(text, allowIOS = false) {
+function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ja-JP";
   utterance.rate = parseFloat(document.getElementById("rate").value);
-  if (selectedVoice) utterance.voice = selectedVoice;
 
-  // iOSでの連続再生許可対策
-  if (allowIOS) {
-    setTimeout(() => speechSynthesis.speak(utterance), 0);
+  const selectedVoiceName = document.getElementById("voice-select").value;
+  const voice = speechSynthesis.getVoices().find(v => v.name === selectedVoiceName);
+  if (voice) utterance.voice = voice;
+
+  // ==== iOS対策 ====
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    // 無音を再生してすぐに目的の音声を再生
+    const silent = new SpeechSynthesisUtterance(" ");
+    silent.lang = "ja-JP";
+    silent.onend = () => {
+      speechSynthesis.speak(utterance);
+    };
+    speechSynthesis.speak(silent);
   } else {
     speechSynthesis.speak(utterance);
   }
+  // =================
 }
 
 
