@@ -14,37 +14,68 @@ function shuffle(array) {
 }
 
 async function startTest() {
-  // ==== iOS用 初回音声再生の許可 ====
-  try {
-    const dummyUtterance = new SpeechSynthesisUtterance("テストを開始します");
-    dummyUtterance.lang = "ja-JP";
-    speechSynthesis.speak(dummyUtterance);
-  } catch (e) {
-    console.warn("音声初期化エラー:", e);
-  }
-  // =================================
+  const grade = document.getElementById("grade-set").value;
+  const mode = document.getElementById("mode").value;
 
-  const level = document.getElementById("level").value;
-  delayMs = level === "easy" ? 3000 : level === "hard" ? 1000 : 2000;
-
-  const gradeKey = document.getElementById("grade-set").value;
-  questions = questionSets[gradeKey] || [];
-
-  if (questions.length === 0) {
-    alert("問題が見つかりません。");
+  if (!grade) {
+    alert("学年とセットを選んでください");
     return;
   }
 
-  currentIndex = 0;
-  correctCount = 0;
-  missedQuestions = [];
+  try {
+    const response = await fetch(`data/${grade}.json`);
+    if (!response.ok) throw new Error("データの読み込みに失敗しました");
 
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("quiz").style.display = "block";
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      alert("問題データが見つかりません");
+      return;
+    }
 
-  showQuestion();
+    if (mode === "ten") {
+      questions = shuffle(data).slice(0, 10); // ✅ 10問だけ出題
+    } else if (mode === "random") {
+      questions = shuffle(data);
+    } else if (mode === "review") {
+      const history = JSON.parse(localStorage.getItem("kanjiTestHistory") || "[]");
+      const last = history[history.length - 1];
+      if (last && last.missed && last.missed.length > 0) {
+        questions = last.missed.map(k => ({ kanji: k.kanji, reading: k.reading }));
+      } else {
+        alert("復習モードの記録がありません");
+        return;
+      }
+    } else {
+      questions = data;
+    }
+
+    // 音声設定
+    const voiceSelect = document.getElementById("voice-select");
+    const selectedVoiceName = voiceSelect.value;
+    selectedVoice = speechSynthesis.getVoices().find(v => v.name === selectedVoiceName);
+
+    // 状態初期化
+    currentIndex = 0;
+    correctCount = 0;
+    missedQuestions = [];
+
+    // 画面切り替え
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("history").style.display = "none";
+
+    showQuestion();
+  } catch (error) {
+    alert("エラーが発生しました: " + error.message);
+  }
 }
 
+function showQuestion() {
+  if (currentIndex >= questions.length) {
+    showResult();
+    return;
+  }
 
   const question = questions[currentIndex];
   const kanjiElem = document.getElementById("kanji");
