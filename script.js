@@ -191,28 +191,33 @@ window.addEventListener("load", () => {
   const dateInput = document.getElementById("test-date");
   dateInput.value = new Date().toISOString().split("T")[0];
 
-  const voiceSelect = document.getElementById("voice-select");
-function loadVoices() {
-  const voiceSelect = document.getElementById("voice-select");
-  voiceSelect.innerHTML = "";
+  function loadVoices() {
+    const voiceSelect = document.getElementById("voice-select");
+    voiceSelect.innerHTML = "";
 
-  // 日本語音声だけ取得
-  const japaneseVoices = speechSynthesis.getVoices()
-    .filter(v => v.lang && v.lang.startsWith("ja"))
-    .slice(0, 5); // 最大5つ
+    // 日本語音声だけ取得
+    const japaneseVoices = speechSynthesis.getVoices()
+      .filter(v => v.lang && v.lang.startsWith("ja"))
+      .slice(0, 5); // 最大5つ
 
-  japaneseVoices.forEach(v => {
-    const option = document.createElement("option");
-    option.value = v.name;
-    option.textContent = `${v.name} (${v.lang})`;
-    voiceSelect.appendChild(option);
-  });
+    japaneseVoices.forEach(v => {
+      const option = document.createElement("option");
+      option.value = v.name;
+      option.textContent = `${v.name} (${v.lang})`;
+      voiceSelect.appendChild(option);
+    });
 
-  // 日本語音声が1つもない場合のフォールバック
-  if (japaneseVoices.length === 0) {
-    const option = document.createElement("option");
-    option.value = "";
-    option.textContent = "日本語音声が見つかりません";
-    voiceSelect.appendChild(option);
+    // フォールバック
+    if (japaneseVoices.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "日本語音声が見つかりません";
+      voiceSelect.appendChild(option);
+    }
   }
-}
+
+  // 音声リスト読み込み
+  loadVoices();
+
+  // スマホ対策: voiceschanged イベントでも読み込み
+  if (typeof speechSynthesis !== "
